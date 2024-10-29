@@ -19,8 +19,8 @@ class Chat extends Component {
             encrypted: true
         });
 
-        // Subscribe to the 'chat-room' channel
-        this.channel = this.pusher.subscribe('chat-room');
+        // Subscribe to the channel
+        this.channel = this.pusher.subscribe('public-room');
 
         // Bind event for receiving new messages
         this.channel.bind('new-message', ({ chat = null }) => {

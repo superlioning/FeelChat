@@ -10,13 +10,14 @@ class IndexPage extends Component {
     handleKeyUp = evt => {
         if (evt.keyCode === 13) {
             const user = evt.target.value;
-            this.setState({ user });
+            const room = 'Public Room';
+            this.setState({ user, room });
         }
     }
 
     render() {
-        // Destructure user from the component state
-        const { user } = this.state;
+        // Destructure user and room from the component state
+        const { user, room } = this.state;
 
         // Define styles for the name input field
         const nameInputStyles = {
@@ -42,6 +43,8 @@ class IndexPage extends Component {
                                         user ?
                                             (<span>
                                                 <span style={{ color: '#999' }}>Hello!</span> {user}
+                                                <br />
+                                                <span style={{ color: '#999' }}>Chatting in</span> {room}
                                             </span>)
                                             :
                                             (`What is your name?`)

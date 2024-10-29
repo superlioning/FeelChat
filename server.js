@@ -64,7 +64,7 @@ app.prepare()
             chatHistory.messages.push(chat);
 
             // Trigger Pusher to send the new message to all clients
-            pusher.trigger('chat-room', 'new-message', { chat });
+            pusher.trigger('public-room', 'new-message', { chat });
 
             // Respond with success
             res.json({ status: 'success' });
