@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
 
-class ChatMessage extends Component {
 
+/**
+ * @returns - A single chat message
+ */
+
+
+class ChatMessage extends Component {
     render() {
         // Destructure props to get position and message; default position is 'left'
         const { position = 'left', message } = this.props;

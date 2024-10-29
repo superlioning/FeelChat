@@ -1,7 +1,13 @@
 import React, { Fragment } from 'react';
 import Head from 'next/head';
 
-// Define a functional component Layout that accepts props
+
+/**
+ * @param {*} props 
+ * @returns - Functional component Layout that accepts props 
+ */
+
+
 const Layout = (props) => (
     <Fragment>
         <Head>

@@ -1,6 +1,11 @@
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 
-// Extend the default Document class to customize the HTML document structure
+
+/**
+ * @returns - Custom Document structure
+ */
+
+
 class MyDocument extends Document {
     render() {
         return (

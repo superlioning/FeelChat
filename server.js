@@ -52,7 +52,7 @@ app.prepare()
         // Endpoint to receive new messages
         server.post('/message', (req, res, next) => {
             // Destructure the request body
-            const { user = null, message = '', timestamp = +new Date } = req.body;
+            const { user = null, message = '', timestamp = +new Date, channel = 'public-room' } = req.body;
 
             // Analyze the sentiment of the message
             const sentimentScore = sentiment.analyze(message).score;
@@ -63,8 +63,8 @@ app.prepare()
             // Add the new chat message to chat history
             chatHistory.messages.push(chat);
 
-            // Trigger Pusher to send the new message to all clients
-            pusher.trigger('public-room', 'new-message', { chat });
+            // Trigger Pusher to send the new message to the specified channel
+            pusher.trigger(channel, 'new-message', { chat });
 
             // Respond with success
             res.json({ status: 'success' });
