@@ -3,6 +3,8 @@
 FeelChat is a real-time web-based chat application that integrates sentiment analysis to enhance communication by providing instant emotional insights during conversations.
 
 ## Authors
+**COMP313-002 (Team 1) F2024**
+
 Ninghua Zhang, Wenjie Zhou, Kuldeep Brar, Varenyam Bhatt, and Olaoluwa Ajakaiye
 
 ## Overview
