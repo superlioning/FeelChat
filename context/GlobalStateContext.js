@@ -10,12 +10,25 @@ const GlobalStateContext = createContext();
 
 export const GlobalStateProvider = ({ children }) => {
 
-    const [user, setUser] = useState(null);
-    const [room, setRoom] = useState('Public Room');
-    const [channel, setChannel] = useState('public-room');
+    // Define initial state values
+    const initialUser = null;
+    const initialRoom = 'Public Room';
+    const initialChannel = 'public-room';
+
+    // State management
+    const [user, setUser] = useState(initialUser);
+    const [room, setRoom] = useState(initialRoom);
+    const [channel, setChannel] = useState(initialChannel);
+
+    // Method to reinitialize states
+    const reinitialize = () => {
+        setUser(initialUser);
+        setRoom(initialRoom);
+        setChannel(initialChannel);
+    };
 
     return (
-        <GlobalStateContext.Provider value={{ user, setUser, room, setRoom, channel, setChannel }}>
+        <GlobalStateContext.Provider value={{ user, setUser, room, setRoom, channel, setChannel, reinitialize }}>
             {children}
         </GlobalStateContext.Provider>
     );
