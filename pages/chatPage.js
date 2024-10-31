@@ -58,6 +58,13 @@ const ChatPage = () => {
         };
     }, []);
 
+    // Logout the user if the user name global state is lost
+    useEffect(() => {
+        if (!user) {
+            handleLogout();
+        }
+    }, [user]);
+
     const inputStyle = {
         background: 'transparent',
         color: '#999',
