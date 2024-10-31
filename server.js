@@ -52,34 +52,38 @@ app.prepare()
             return handler(req, res);
         });
 
-        // Initialize an object to hold chat history
-        const chatHistory = { messages: [] };
+        // Initialize a single array to hold chat history for the current room
+        let chatHistory = [];
 
         // Endpoint to receive new messages
         server.post('/message', (req, res) => {
             // Destructure the request body to get user details, message, timestamp, and channel
-            const { user = null, message = '', timestamp = +new Date, channel = 'public-room' } = req.body;
+            const { user = null, message = '', timestamp = +new Date(), channel = 'public-room' } = req.body;
 
-            // Analyze the sentiment of the message
+            // Destructure the request body to get user details, message, timestamp, and channel
             const sentimentScore = sentiment.analyze(message).score;
 
             // Create a chat object containing user, message, timestamp, and sentiment score
             const chat = { user, message, timestamp, sentiment: sentimentScore };
 
             // Add the new chat message to the chat history
-            chatHistory.messages.push(chat);
+            chatHistory.push(chat);
 
             // Trigger Pusher to send the new message to the specified channel
             pusher.trigger(channel, 'new-message', { chat });
 
-            // Respond to the client with a success message
             res.json({ status: 'success' });
         });
 
         // Endpoint to retrieve chat history
-        server.post('/messages', (req, res, next) => {
-            // Send the chat history as a response
-            res.json({ ...chatHistory, status: 'success' });
+        server.post('/messages', (req, res) => {
+            res.json({ messages: chatHistory, status: 'success' });
+        });
+
+        // Endpoint to clear chat history when leaving the room
+        server.post('/leave-room', (req, res) => {
+            chatHistory = [];
+            res.json({ status: 'success' });
         });
 
         // User Signup Endpoint

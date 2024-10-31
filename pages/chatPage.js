@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Layout from '../components/Layout';
 import Chat from '../components/Chat';
 import { useGlobalState } from '../context/GlobalStateContext';
+import { useRouter } from 'next/router';
 
 
 /**
@@ -13,11 +14,13 @@ import { useGlobalState } from '../context/GlobalStateContext';
 
 const ChatPage = () => {
 
+    const router = useRouter();
+
     // Extract user, room, setRoom, and setChannel state from global context
-    const { user, room, setRoom, setChannel, exitChat } = useGlobalState();
+    const { user, room, setRoom, setChannel, exitChat, logout } = useGlobalState();
 
     // Event handler to handle the submission of the room number and channel
-    const handleSubmit = () => {
+    const handleJoinRoom = () => {
         const roomInput = document.getElementById('roomInput').value;
 
         if (roomInput) {
@@ -29,10 +32,31 @@ const ChatPage = () => {
         }
     };
 
+    // Event handler to handle the logout of the user
+    const handleLogout = () => {
+        logout();
+        router.push('/');
+    };
+
     // Event handler to handle the exit of the user from the chat
     const handleExit = () => {
         exitChat();
     };
+
+    // Prevent the user from refreshing the page
+    useEffect(() => {
+        const handleBeforeUnload = (event) => {
+            event.preventDefault();
+            event.returnValue = '';
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        // Clean up the event listener when the component is unmounted
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);
 
     const inputStyle = {
         background: 'transparent',
@@ -83,30 +107,31 @@ const ChatPage = () => {
                                     style={inputStyle}
                                 />
                             )}
-                            {/* Join button*/}
+                            {/* Join and logout buttons*/}
                             {!room && (
-                                <button
-                                    onClick={handleSubmit}
-                                    className="btn btn-primary mt-3"
-                                    style={{
-                                        fontSize: '1.2rem',
-                                        fontWeight: 600,
-                                        backgroundColor: '#007bff',
-                                        marginLeft: '150px',
-                                    }}
-                                >
-                                    Join Chat
-                                </button>
+                                <div className="d-flex mt-3" style={{ gap: '50px' }}>
+                                    <button
+                                        onClick={handleJoinRoom}
+                                        className="btn btn-lg btn-primary"
+                                        style={{ width: '150px', height: '50px' }}
+                                    >
+                                        Join Chat
+                                    </button>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="btn btn-lg btn-danger"
+                                        style={{ width: '150px', height: '50px' }}
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
                             )}
                             {/* Exit button*/}
                             {room && (
-                                <button onClick={handleExit}
-                                    className="btn btn-danger mt-3"
-                                    style={{
-                                        fontSize: '1.2rem',
-                                        fontWeight: 600,
-                                        marginLeft: '150px',
-                                    }}
+                                <button
+                                    onClick={handleExit}
+                                    className="btn btn-lg btn-warning mt-3"
+                                    style={{ width: '150px', height: '50px' }}
                                 >
                                     Exit Chat
                                 </button>
