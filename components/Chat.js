@@ -47,8 +47,9 @@ const Chat = () => {
                 });
         });
 
-        // Cleanup function to disconnect from Pusher
+        // Cleanup function to clear the chat history and disconnect from Pusher
         return () => {
+            axios.post('/leave-room');
             pusher.disconnect();
         };
     }, [channel]);
