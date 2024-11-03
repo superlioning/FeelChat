@@ -145,12 +145,10 @@ app.prepare()
           }
 
           // Respond with a success message and user details upon successful login
-          res
-            .status(200)
-            .json({
-              message: "Login successful",
-              user: { name: user.name, email: user.email },
-            });
+          res.status(200).json({
+            message: "Login successful",
+            user: { name: user.name, email: user.email },
+          });
         } catch (error) {
           res.status(500).json({ message: "Server error", error });
         }
@@ -168,6 +166,53 @@ app.prepare()
         } catch (error) {
           res.status(500).json({ message: "Server error", error });
         }
+      });
+
+      // Edit message
+      server.post("/edit-message", (req, res) => {
+        const { messageId, newMessage, timestamp, channel, user } = req.body;
+
+        // Find message in chat history
+        const messageIndex = chatHistory.findIndex(
+          (msg) => msg.timestamp === messageId && msg.user === user
+        );
+
+        if (messageIndex === -1) {
+          return res
+            .status(400)
+            .json({ status: "error", message: "Message not found" });
+        }
+
+        // Only allow edits within 5 minutes
+        const editTimeLimit = 5 * 60 * 1000; // 5 minutes in ms
+        const timeSinceMessage =
+          timestamp - chatHistory[messageIndex].timestamp;
+
+        if (timeSinceMessage > editTimeLimit) {
+          return res.status(400).json({
+            status: "error",
+            message: "Can't edit messages older than 5 minutes",
+          });
+        }
+
+        // Update message
+        const updatedMessage = {
+          ...chatHistory[messageIndex],
+          message: newMessage,
+          edited: true,
+          editedAt: timestamp,
+        };
+
+        chatHistory[messageIndex] = updatedMessage;
+
+        // Broadcast edit
+        pusher.trigger(channel, "message-edited", {
+          messageId,
+          newMessage,
+          editedAt: timestamp,
+        });
+
+        res.json({ status: "success" });
       });
 
       // Start the server and listen on the specified port
