@@ -38,119 +38,143 @@ const pusher = new Pusher({
 // Prepare the Next.js application
 app.prepare()
     .then(() => {
+      // Create an Express server instance
+      const server = express();
 
-        // Create an Express server instance
-        const server = express();
+      // Use middleware to enable CORS (Cross-Origin Resource Sharing) and parse request bodies
+      server.use(cors());
+      server.use(bodyParser.json());
+      server.use(bodyParser.urlencoded({ extended: true }));
 
-        // Use middleware to enable CORS (Cross-Origin Resource Sharing) and parse request bodies
-        server.use(cors());
-        server.use(bodyParser.json());
-        server.use(bodyParser.urlencoded({ extended: true }));
+      // Handle all requests using the Next.js request handler
+      server.get("*", (req, res) => {
+        return handler(req, res);
+      });
 
-        // Handle all requests using the Next.js request handler
-        server.get('*', (req, res) => {
-            return handler(req, res);
-        });
+      // Initialize a single array to hold chat history for the current room
+      let chatHistory = [];
 
-        // Initialize a single array to hold chat history for the current room
-        let chatHistory = [];
+      // Endpoint to receive new messages
+      server.post("/message", (req, res) => {
+        // Destructure the request body to get user details, message, timestamp, and channel
+        const {
+          user = null,
+          message = "",
+          timestamp = +new Date(),
+          channel = "public-room",
+        } = req.body;
 
-        // Endpoint to receive new messages
-        server.post('/message', (req, res) => {
-            // Destructure the request body to get user details, message, timestamp, and channel
-            const { user = null, message = '', timestamp = +new Date(), channel = 'public-room' } = req.body;
+        // Destructure the request body to get user details, message, timestamp, and channel
+        const sentimentScore = sentiment.analyze(message).score;
 
-            // Destructure the request body to get user details, message, timestamp, and channel
-            const sentimentScore = sentiment.analyze(message).score;
+        // Create a chat object containing user, message, timestamp, and sentiment score
+        const chat = { user, message, timestamp, sentiment: sentimentScore };
 
-            // Create a chat object containing user, message, timestamp, and sentiment score
-            const chat = { user, message, timestamp, sentiment: sentimentScore };
+        // Add the new chat message to the chat history
+        chatHistory.push(chat);
 
-            // Add the new chat message to the chat history
-            chatHistory.push(chat);
+        // Trigger Pusher to send the new message to the specified channel
+        pusher.trigger(channel, "new-message", { chat });
 
-            // Trigger Pusher to send the new message to the specified channel
-            pusher.trigger(channel, 'new-message', { chat });
+        res.json({ status: "success" });
+      });
 
-            res.json({ status: 'success' });
-        });
+      // Endpoint to retrieve chat history
+      server.post("/messages", (req, res) => {
+        res.json({ messages: chatHistory, status: "success" });
+      });
 
-        // Endpoint to retrieve chat history
-        server.post('/messages', (req, res) => {
-            res.json({ messages: chatHistory, status: 'success' });
-        });
+      // Endpoint to clear chat history when leaving the room
+      server.post("/leave-room", (req, res) => {
+        chatHistory = [];
+        res.json({ status: "success" });
+      });
 
-        // Endpoint to clear chat history when leaving the room
-        server.post('/leave-room', (req, res) => {
-            chatHistory = [];
-            res.json({ status: 'success' });
-        });
+      // User Signup Endpoint
+      server.post("/api/signup", async (req, res) => {
+        const { email, password, name } = req.body;
 
-        // User Signup Endpoint
-        server.post('/api/signup', async (req, res) => {
-            const { email, password, name } = req.body;
+        // Validate request data
+        if (!email || !password || !name) {
+          return res.status(400).json({ message: "All fields are required" });
+        }
 
-            // Validate request data
-            if (!email || !password || !name) {
-                return res.status(400).json({ message: 'All fields are required' });
-            }
+        try {
+          // Connect to the database
+          dbConnect();
+          const existingUser = await User.findOne({ email });
+          if (existingUser) {
+            return res.status(400).json({ message: "Email already taken" });
+          }
 
-            try {
-                // Connect to the database
-                dbConnect();
-                const existingUser = await User.findOne({ email });
-                if (existingUser) {
-                    return res.status(400).json({ message: 'Email already taken' });
-                }
+          // Hash the password before storing it
+          const hashedPassword = await bcrypt.hash(password, 10);
+          const newUser = new User({ email, password: hashedPassword, name });
+          await newUser.save();
 
-                // Hash the password before storing it
-                const hashedPassword = await bcrypt.hash(password, 10);
-                const newUser = new User({ email, password: hashedPassword, name });
-                await newUser.save();
+          // Respond with a success message upon successful user creation
+          res.status(201).json({ message: "User created successfully" });
+        } catch (error) {
+          res.status(500).json({ message: "Server error", error });
+        }
+      });
 
-                // Respond with a success message upon successful user creation
-                res.status(201).json({ message: 'User created successfully' });
-            } catch (error) {
-                res.status(500).json({ message: 'Server error', error });
-            }
-        });
+      // User Login Endpoint
+      server.post("/api/login", async (req, res) => {
+        const { email, password } = req.body;
 
-        // User Login Endpoint
-        server.post('/api/login', async (req, res) => {
-            const { email, password } = req.body;
+        // Validate request data
+        if (!email || !password) {
+          return res
+            .status(400)
+            .json({ message: "Email and password are required" });
+        }
 
-            // Validate request data
-            if (!email || !password) {
-                return res.status(400).json({ message: 'Email and password are required' });
-            }
+        try {
+          // Connect to the database
+          dbConnect();
+          const user = await User.findOne({ email });
+          if (!user) {
+            return res.status(401).json({ message: "Invalid credentials" });
+          }
 
-            try {
-                // Connect to the database
-                dbConnect();
-                const user = await User.findOne({ email });
-                if (!user) {
-                    return res.status(401).json({ message: 'Invalid credentials' });
-                }
+          // Check if the password is valid
+          const isPasswordValid = await bcrypt.compare(password, user.password);
+          if (!isPasswordValid) {
+            return res.status(401).json({ message: "Invalid credentials" });
+          }
 
-                // Check if the password is valid
-                const isPasswordValid = await bcrypt.compare(password, user.password);
-                if (!isPasswordValid) {
-                    return res.status(401).json({ message: 'Invalid credentials' });
-                }
+          // Respond with a success message and user details upon successful login
+          res
+            .status(200)
+            .json({
+              message: "Login successful",
+              user: { name: user.name, email: user.email },
+            });
+        } catch (error) {
+          res.status(500).json({ message: "Server error", error });
+        }
+      });
 
-                // Respond with a success message and user details upon successful login
-                res.status(200).json({ message: 'Login successful', user: { name: user.name, email: user.email } });
-            } catch (error) {
-                res.status(500).json({ message: 'Server error', error });
-            }
-        });
+      // Endpoint to delete a test user
+      server.post("/api/deleteTestUser", async (req, res) => {
+        const { email } = req.body;
 
-        // Start the server and listen on the specified port
-        server.listen(port, err => {
-            if (err) throw err;
-            console.log(`> Ready on http://localhost:${port}`);
-        });
+        try {
+          // Connect to the database
+          dbConnect();
+          await User.deleteOne({ email });
+          res.status(200).json({ message: "User deleted successfully" });
+        } catch (error) {
+          res.status(500).json({ message: "Server error", error });
+        }
+      });
 
+      // Start the server and listen on the specified port
+      server.listen(port, (err) => {
+        if (err) throw err;
+        console.log(`> Ready on http://localhost:${port}`);
+      });
     })
     .catch(ex => {
         console.error(ex.stack);
