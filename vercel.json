@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "PUSHER_APP_ID": "@pusher_app_id",
+    "PUSHER_APP_KEY": "@pusher_app_key",
+    "PUSHER_APP_SECRET": "@pusher_app_secret",
+    "PUSHER_APP_CLUSTER": "@pusher_app_cluster",
+    "MONGODB_URI": "@mongodb_uri"
+  }
+}
