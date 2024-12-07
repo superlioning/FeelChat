@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Chat from '../components/Chat';
 import LogoutButton from '../components/LogoutButton';
 import { useGlobalState } from '../context/GlobalStateContext';
+import { generalRoles } from '../utils/authorizationList';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -15,6 +16,11 @@ export default function ChatPage() {
       const res = await fetch('/api/auth/check', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
+
+        if (!generalRoles.includes(data.role)) {
+          router.push('/');
+        }
+
         setUser(data.name);
       } else {
         router.push('/login');
@@ -76,7 +82,7 @@ export default function ChatPage() {
               <input
                 id="roomInput"
                 type="text"
-                className="mt-3 form-control px-3 py-2 bg-transparent text-white border-b border-gray-400 border-t-transparent border-l-transparent border-r-transparent text-xl placeholder-gray-400 focus:outline-none"
+                className="mt-3 form-control px-3 py-2 text-grey border-b border-gray-400 border-t-transparent border-l-transparent border-r-transparent text-xl placeholder-gray-400 focus:outline-none"
                 autoComplete="off"
                 placeholder="Leave blank for public room"
               />
