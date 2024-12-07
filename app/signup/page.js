@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
+  const [role, setRole] = useState('User');
+  const [verificationCode, setVerificationCode] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -12,10 +14,24 @@ export default function SignupPage() {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+
+    if (role === "Admin") {
+      if (verificationCode !== process.env.NEXT_PUBLIC_ADMIN_VERIFICATION_CODE) {
+        setError('Invalid verification code');
+        return;
+      }
+    }
+    else if (role === "Customer Support") {
+      if (verificationCode !== process.env.NEXT_PUBLIC_CUSTOMER_SUPPORT_VERIFICATION_CODE) {
+        setError('Invalid verification code');
+        return;
+      }
+    }
+
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, role, email, password }),
     });
     if (res.ok) {
       router.push('/login');
@@ -46,6 +62,34 @@ export default function SignupPage() {
               />
               <label htmlFor="floatingName">Name</label>
             </div>
+            <div className="form-floating mb-3">
+              <select
+                className="form-control"
+                id="floatingRole"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                required
+              >
+                <option value="User">User</option>
+                <option value="Analyst">Analyst</option>
+                <option value="Customer Support">Customer Support</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+            {(role === "Admin" || role === "Customer Support") && (
+              <div className="form-floating mb-3">
+                <input
+                  type="text"
+                  className="form-control"
+                  id="floatingVerificationCode"
+                  placeholder="Verification Code"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  required
+                />
+                <label htmlFor="floatingVerificationCode">Verification Code</label>
+              </div>
+            )}
             <div className="form-floating mb-3">
               <input
                 type="email"

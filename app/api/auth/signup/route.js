@@ -5,7 +5,7 @@ import User from '../../../models/User';
 import bcrypt from 'bcrypt';
 
 export async function POST(request) {
-  const { name, email, password } = await request.json();
+  const { name, role, email, password } = await request.json();
 
   await dbConnect();
 
@@ -18,6 +18,7 @@ export async function POST(request) {
 
   const user = new User({
     name,
+    role,
     email,
     password: hashedPassword,
   });

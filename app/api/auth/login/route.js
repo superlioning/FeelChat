@@ -22,13 +22,13 @@ export async function POST(request) {
 
   // Create a JWT token
   const token = jwt.sign(
-    { _id: user._id, name: user.name, email: user.email },
+    { _id: user._id, name: user.name, role: user.role, email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
   );
 
   // Set the token as an HTTP-only cookie
-  const response = NextResponse.json({ message: 'Login successful' });
+  const response = NextResponse.json({ message: 'Login successful', role: user.role });
   response.cookies.set('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production', // Only secure in production

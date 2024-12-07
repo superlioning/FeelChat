@@ -11,11 +11,13 @@ export const GlobalStateProvider = ({ children }) => {
   const initialUser = null;
   const initialRoom = null;
   const initialChannel = null;
+  const initialRole = "";
 
   // State management using React's useState hook
   const [user, setUser] = useState(initialUser);
   const [room, setRoom] = useState(initialRoom);
   const [channel, setChannel] = useState(initialChannel);
+  const [role, setRole] = useState(initialRole);
 
   // Method to reinitialize room and channel states when exiting chat
   const exitChat = () => {
@@ -28,11 +30,18 @@ export const GlobalStateProvider = ({ children }) => {
     setUser(initialUser);
     setRoom(initialRoom);
     setChannel(initialChannel);
+    setRole(initialRole);
   };
 
   // Provide the state values and methods to the context consumers
   return (
-    <GlobalStateContext.Provider value={{ user, setUser, room, setRoom, channel, setChannel, exitChat, logout }}>
+    <GlobalStateContext.Provider value={{
+      user, setUser,
+      room, setRoom,
+      channel, setChannel,
+      role, setRole,
+      exitChat, logout
+    }}>
       {children}
     </GlobalStateContext.Provider>
   );

@@ -2,12 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useGlobalState } from '../context/GlobalStateContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
   const router = useRouter();
+  const { setRole } = useGlobalState();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -17,6 +20,8 @@ export default function LoginPage() {
       body: JSON.stringify({ email, password }),
     });
     if (res.ok) {
+      const data = await res.json();
+      setRole(data.role);
       router.push('/chat');
     } else {
       const data = await res.json();
