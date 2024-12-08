@@ -38,3 +38,21 @@ html, body {
 main {
   flex: 1;
 }
+
+/* globals.css */
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('./fonts/GeistVF.woff') format('woff');
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('./fonts/GeistMonoVF.woff') format('woff');
+  font-weight: 100 900;
+}
+
+:root {
+  --font-geist-sans: 'Geist Sans', sans-serif;
+  --font-geist-mono: 'Geist Mono', monospace;
+}

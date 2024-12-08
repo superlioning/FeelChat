@@ -37,7 +37,7 @@ export default function LoginPage() {
           <p className="col-lg-10 fs-4 mt-4">Simple, reliable, private messaging and chatting for free.</p>
         </div>
         <div className="col-md-10 mx-auto col-lg-5">
-          <form className="p-4 p-md-5 border rounded-3 bg-body-tertiary" onSubmit={handleLogin}>
+          <form role="form" className="p-4 p-md-5 border rounded-3 bg-body-tertiary" onSubmit={handleLogin}>
             <div className="form-floating mb-3">
               <input
                 type="email"
