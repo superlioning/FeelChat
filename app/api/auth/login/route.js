@@ -32,7 +32,7 @@ export async function POST(request) {
   response.cookies.set('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production', // Only secure in production
-    maxAge: 60 * 60, // 1 hour in seconds
+    maxAge: 60 * 60, // 1 hour
     path: '/',
   });
 

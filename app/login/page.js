@@ -34,7 +34,7 @@ export default function LoginPage() {
       <div className="row align-items-center g-lg-5 py-5">
         <div className="col-lg-7 text-center text-lg-start">
           <h1 className="display-4 fw-bold lh-1 text-body-emphasis mb-3">Welcome Back!</h1>
-          <p className="col-lg-10 fs-4 ml-5 mt-4">Simple, reliable, private messaging and chatting for free.</p>
+          <p className="col-lg-10 fs-4 mt-4">Simple, reliable, private messaging and chatting for free.</p>
         </div>
         <div className="col-md-10 mx-auto col-lg-5">
           <form className="p-4 p-md-5 border rounded-3 bg-body-tertiary" onSubmit={handleLogin}>
