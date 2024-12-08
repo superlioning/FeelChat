@@ -12,6 +12,8 @@ const SAD_EMOJI = [55357, 56864];
 const HAPPY_EMOJI = [55357, 56832];
 const NEUTRAL_EMOJI = [55357, 56848];
 
+const MESSAGE_MODIFY_TIMEOUT = 10000;
+
 export default function Chat() {
   const { user, channel } = useGlobalState();
   const [chats, setChats] = useState([]);
@@ -155,13 +157,22 @@ export default function Chat() {
                   onEdit={(newText) => editMessage(chat.messageId, newText)}
                   editInput={editInput}
                   setEditInput={setEditInput}
-                  showActions={showActions}
+                  showActions={isOwner}
                   onEditClick={() => {
-                    setEditingMessageId(chat.messageId);
-                    setEditInput(chat.message);
+                    const timeSinceMessage = Date.now() - chat.timestamp;
+                    if (timeSinceMessage <= MESSAGE_MODIFY_TIMEOUT) {
+                      setEditingMessageId(chat.messageId);
+                      setEditInput(chat.message);
+                    }
                   }}
-                  onDeleteClick={() => deleteMessage(chat.messageId)}
+                  onDeleteClick={() => {
+                    const timeSinceMessage = Date.now() - chat.timestamp;
+                    if (timeSinceMessage <= MESSAGE_MODIFY_TIMEOUT) {
+                      deleteMessage(chat.messageId);
+                    }
+                  }}
                   edited={chat.edited}
+                  timestamp={chat.timestamp}
                 />
               </Fragment>
             );
