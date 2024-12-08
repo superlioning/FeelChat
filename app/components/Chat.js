@@ -8,17 +8,12 @@ import ChatMessage from "./ChatMessage";
 import { useGlobalState } from "../context/GlobalStateContext";
 import { analyzeMessage } from "../utils/analyzeSentiment";
 
-const SAD_EMOJI = [55357, 56864];
-const HAPPY_EMOJI = [55357, 56832];
-const NEUTRAL_EMOJI = [55357, 56848];
-
 const MESSAGE_MODIFY_TIMEOUT = 10000;
 
 export default function Chat() {
   const { user, channel } = useGlobalState();
   const [chats, setChats] = useState([]);
   const [input, setInput] = useState("");
-  const [currentEmoji, setCurrentEmoji] = useState(NEUTRAL_EMOJI);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editInput, setEditInput] = useState("");
 
@@ -33,7 +28,12 @@ export default function Chat() {
       setChats((prevChats) =>
         prevChats.map((chat) =>
           chat.messageId === data.messageId
-            ? { ...chat, message: data.message, edited: true }
+            ? {
+              ...chat,
+              sentimentScore: data.sentimentScore,
+              message: data.message,
+              edited: true
+            }
             : chat
         )
       );
@@ -60,19 +60,14 @@ export default function Chat() {
   const sendMessage = async () => {
     if (!input.trim()) return;
 
+    // Analyze sentiment of the message
     const sentimentResult = analyzeMessage(input);
-    const newEmoji =
-      sentimentResult.score > 0
-        ? HAPPY_EMOJI
-        : sentimentResult.score === 0
-        ? NEUTRAL_EMOJI
-        : SAD_EMOJI;
-    setCurrentEmoji(newEmoji);
 
     await axios.post("/api/messages", {
       username: user,
+      sentimentScore: sentimentResult.score,
       message: input,
-      channel,
+      channel
     });
 
     setInput("");
@@ -81,11 +76,15 @@ export default function Chat() {
   const editMessage = async (messageId, newText) => {
     if (!newText.trim()) return;
 
+    // Re-analyze sentiment of edited message
+    const sentimentResult = analyzeMessage(newText);
+
     await axios.post("/api/messages", {
       messageId,
+      sentimentScore: sentimentResult.score,
       message: newText,
       channel,
-      action: "edit",
+      action: "edit"
     });
 
     setEditingMessageId(null);
@@ -144,14 +143,12 @@ export default function Chat() {
                     className={`d-block w-100 font-weight-bold text-dark mt-4 pb-1 px-1 text-${position}`}
                     style={{ fontSize: "0.9rem" }}
                   >
-                    <span className="d-block" style={{ fontSize: "1.6rem" }}>
-                      {String.fromCodePoint(...currentEmoji)}
-                    </span>
                     <span>{chat.username || "Anonymous"}</span>
                   </div>
                 )}
                 <ChatMessage
                   message={chat.message}
+                  sentimentScore={chat.sentimentScore}
                   position={position}
                   isEditing={editingMessageId === chat.messageId}
                   onEdit={(newText) => editMessage(chat.messageId, newText)}
@@ -191,6 +188,13 @@ export default function Chat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
           ></textarea>
+          <button
+            onClick={sendMessage}
+            className="btn btn-primary ml-2"
+            style={{ height: "60px" }}
+          >
+            Send Message
+          </button>
         </div>
       </Fragment>
     )

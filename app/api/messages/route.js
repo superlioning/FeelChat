@@ -3,12 +3,13 @@ import { NextResponse } from "next/server";
 import pusher from "../../utils/pusherServer";
 
 export async function POST(request) {
-  const { username, message, channel, messageId, action } =
+  const { username, sentimentScore, message, channel, messageId, action } =
     await request.json();
 
   if (action === "edit") {
     await pusher.trigger(channel, "edit-message", {
       messageId,
+      sentimentScore,
       message,
       timestamp: Date.now(),
     });
@@ -26,6 +27,7 @@ export async function POST(request) {
   await pusher.trigger(channel, "new-message", {
     messageId: newMessageId,
     username,
+    sentimentScore,
     message,
     timestamp: Date.now(),
   });

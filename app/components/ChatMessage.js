@@ -1,11 +1,16 @@
 // components/ChatMessage.js
 "use client";
+
 import { useState, useEffect } from "react";
 
 const MODIFY_TIMEOUT = 10000; // 10 seconds
+const SAD_EMOJI = [55357, 56864];
+const HAPPY_EMOJI = [55357, 56832];
+const NEUTRAL_EMOJI = [55357, 56848];
 
 const ChatMessage = ({
   message,
+  sentimentScore,
   position = "left",
   isEditing,
   onEdit,
@@ -23,6 +28,13 @@ const ChatMessage = ({
   const align = isRight ? "text-right" : "text-left";
   const justify = isRight ? "justify-content-end" : "justify-content-start";
 
+  // Get emoji based on sentiment score
+  const emoji = sentimentScore > 0
+    ? HAPPY_EMOJI
+    : sentimentScore === 0
+      ? NEUTRAL_EMOJI
+      : SAD_EMOJI;
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setCanModify(false);
@@ -31,17 +43,20 @@ const ChatMessage = ({
     return () => clearTimeout(timeoutId);
   }, [timestamp]);
 
+  const messageStyles = {
+    fontWeight: 500,
+    lineHeight: 1.4,
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word",
+    overflowWrap: "break-word",
+  };
+
   const messageBoxStyles = {
     maxWidth: "70%",
     flexGrow: 0,
     position: "relative",
     transition: "background-color 0.2s ease",
-  };
-
-  const messageStyles = {
-    fontWeight: 500,
-    lineHeight: 1.4,
-    whiteSpace: "pre-wrap",
+    width: "fit-content",
   };
 
   const actionButtonStyles = {
@@ -98,6 +113,13 @@ const ChatMessage = ({
 
   return (
     <div className={`w-100 my-1 d-flex ${justify}`}>
+      {!isRight && (
+        <span
+          style={{ fontSize: "1.6rem", marginRight: "4px" }}
+        >
+          {String.fromCodePoint(...emoji)}
+        </span>
+      )}
       <div
         className="bg-light rounded border border-gray p-2"
         style={messageBoxStyles}
@@ -111,13 +133,19 @@ const ChatMessage = ({
               value={editInput}
               onChange={(e) => setEditInput(e.target.value)}
               className="form-control"
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   onEdit(editInput);
                 }
               }}
               autoFocus
             />
+            <button
+              onClick={() => onEdit(editInput)}
+              className="btn btn-success ml-2"
+            >
+              Confirm
+            </button>
           </div>
         ) : (
           <div className={align}>
@@ -131,32 +159,14 @@ const ChatMessage = ({
             </span>
             {showActions && canModify && (
               <div style={actionButtonStyles}>
-                <button
-                  onClick={onEditClick}
-                  style={editButtonStyles}
-                  title="Edit message"
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
+                <button onClick={onEditClick} style={editButtonStyles} title="Edit message">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                   </svg>
                   Edit
                 </button>
-                <button
-                  onClick={onDeleteClick}
-                  style={deleteButtonStyles}
-                  title="Delete message"
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
+                <button onClick={onDeleteClick} style={deleteButtonStyles} title="Delete message">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                   </svg>
                   Delete
@@ -166,6 +176,13 @@ const ChatMessage = ({
           </div>
         )}
       </div>
+      {isRight && (
+        <span
+          style={{ fontSize: "1.6rem", marginLeft: "4px" }}
+        >
+          {String.fromCodePoint(...emoji)}
+        </span>
+      )}
     </div>
   );
 };
