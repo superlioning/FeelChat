@@ -2,8 +2,8 @@
 
 describe("Chat Functionality", () => {
   const testUser = {
-    email: "test@example.com",
-    password: "123456",
+    email: "tester@example.com",
+    password: "tester@example.com",
   };
 
   beforeEach(() => {

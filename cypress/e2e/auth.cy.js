@@ -7,9 +7,9 @@ describe("Authentication Flow", () => {
   });
 
   const testUser = {
-    name: "Test User",
-    email: "test@example.com",
-    password: "123456",
+    name: "Tester",
+    email: "tester@example.com",
+    password: "tester@example.com",
     role: "User",
   };
 
